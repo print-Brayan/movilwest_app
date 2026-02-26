@@ -1,0 +1,8 @@
+Flask==3.0.2
+Flask-Cors==4.0.0
+psycopg2-binary==2.9.9  # Para conectarse a PostgreSQL
+SQLAlchemy==2.0.27      # Para manejar la base de datos más fácil
+Flask-SQLAlchemy==3.1.1  # Integración de SQLAlchemy con Flask
+bcrypt==4.1.2           # Para encriptar las contraseñas
+PyJWT==2.8.0            # Para los tokens de sesión de la app
+bandit==1.7.7           # Tu herramienta de seguridad

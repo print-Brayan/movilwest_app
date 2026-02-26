@@ -1,0 +1,57 @@
+¿Cómo usamos Bandit aquí?
+Con esta configuración, tu entorno ya tiene Bandit instalado. Cuando estés programando tus rutas o tus casos de uso y quieras comprobar si escribiste algo inseguro (como dejar una contraseña visible o armar mal una consulta a la base de datos), solo tendrás que abrir una terminal y ejecutar:
+
+docker exec -it movilwest_flask bandit -r .
+
+Docker comandos
+
+Docker Compose 
+docker-compose up -d: Crea y arranca los servicios definidos en el archivo docker-compose.yml.
+docker-compose down: Detiene y elimina contenedores y redes creadas por up.
+
+Redes y Volúmenes
+docker network ls: Lista las redes disponibles.
+docker volume ls: Lista los volúmenes.
+
+Git & github
+
+1. Configuración Inicial y Clonación 
+git init: Inicializa un nuevo repositorio de Git local en la carpeta actual.
+git clone <url>: Clona un repositorio existente desde GitHub a tu máquina local.
+git config --global user.name "Nombre": Configura el nombre de usuario para tus commits.
+git config --global user.email "correo@ejemplo.com": Configura tu correo electrónico. 
+YouTube
+YouTube
+ +3
+2. Gestión de Cambios (Ciclo de Vida)
+git status: Muestra el estado actual del directorio de trabajo (archivos modificados, preparados, etc.).
+git add <archivo>: Añade un archivo específico al área de preparación (staging area).
+git add .: Añade todos los cambios nuevos y modificados al área de preparación.
+git commit -m "Mensaje descriptivo": Confirma los cambios preparados, guardándolos en el historial local.
+git commit --amend: Modifica el último commit realizado. 
+Atlassian
+Atlassian
+ +4
+3. Ramas (Branches)
+git branch: Lista las ramas locales.
+git branch <nombre>: Crea una nueva rama.
+git checkout <nombre>: Cambia de la rama actual a la especificada.
+git checkout -b <nombre>: Crea una nueva rama y se cambia a ella simultáneamente.
+git merge <rama>: Fusiona la rama especificada con la rama actual. 
+Atlassian
+Atlassian
+ +4
+4. Sincronización (Remotos)
+git remote add origin <url>: Vincula tu repositorio local con uno remoto en GitHub.
+git push -u origin <rama>: Sube los cambios locales al repositorio remoto y establece la rama rastreada.
+git pull: Descarga y fusiona los cambios del repositorio remoto al local.
+git fetch: Descarga el historial del repositorio remoto sin fusionar. 
+Gist
+Gist
+ +4
+5. Historial y Deshacer Cambios 
+git log: Muestra el historial de commits.
+git reset --soft HEAD~1: Deshace el último commit, manteniendo los cambios en el área de trabajo.
+git reset --hard HEAD~1: Deshace el último commit y elimina los cambios.
+git stash: Guarda temporalmente los cambios no confirmados
+
