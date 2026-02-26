@@ -9,6 +9,13 @@ Docker Compose
 docker-compose up -d: Crea y arranca los servicios definidos en el archivo docker-compose.yml.
 docker-compose down: Detiene y elimina contenedores y redes creadas por up.
 
+Base de datos y visualización de tablas
+docker compose up -d --build: Levanta backend, frontend, postgres y pgAdmin.
+docker compose ps: Verifica estado de los contenedores.
+docker exec -it movilwest_postgres psql -U postgres -d movilwest_db -c "\dt": Lista tablas desde consola.
+pgAdmin (navegador): http://localhost:5050
+Credenciales pgAdmin por defecto: admin@movilwest.local / admin123
+
 Redes y Volúmenes
 docker network ls: Lista las redes disponibles.
 docker volume ls: Lista los volúmenes.

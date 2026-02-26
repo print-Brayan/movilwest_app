@@ -1,21 +1,23 @@
-version: '3.8'
 
 services:
-  # 1. BASE DE DATOS: PostgreSQL
   db:
-    image: postgres:18-alpine
-    container_name: movilwest_db
-    restart: always
+    image: postgres:16-alpine
+    container_name: movilwest_postgres
     environment:
-      POSTGRES_USER: movilwest_admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: movilwest_db
+      POSTGRES_DB: ${POSTGRES_DB:-movilwest_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-movilwest_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  # 2. BACKEND: Flask (Python)
+  # BACKEND: Flask (Python)
   backend:
     build: 
       context: ./backend
@@ -25,15 +27,32 @@ services:
     environment:
       FLASK_APP: app.py
       FLASK_ENV: development
-      DATABASE_URL: postgresql://movilwest_admin:password123@db:5432/movilwest_db
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-admin}@db:5432/${POSTGRES_DB:-movilwest_db}}
+      PGCLIENTENCODING: UTF8
     ports:
       - "5000:5000"
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
-  # 3. FRONTEND: React (Vite)
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: movilwest_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@movilwest.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # FRONTEND: React (Vite)
   frontend:
     build: 
       context: ./frontend
@@ -48,6 +67,6 @@ services:
     depends_on:
       - backend
 
-# Declaración de los volúmenes persistentes
 volumes:
-  pgdata:
+  postgres_data:
+  pgadmin_data:
