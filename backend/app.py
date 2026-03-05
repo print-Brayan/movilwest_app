@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-
+from flask import send_from_directory
+import os
 from infrastructure.config import build_database_url
 from infrastructure.database import db
 from infrastructure.models import *
@@ -34,6 +35,10 @@ def create_app():
             "estado": "ok",
             "mensaje": "¡Base de datos conectada y estructurada!"
         })
+
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        return send_from_directory('/app/uploads', filename)
 
     return app
 

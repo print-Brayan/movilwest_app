@@ -1,4 +1,5 @@
 from infrastructure.models import ControlRecarga
+from datetime import datetime, timezone
 
 class RegistrarRecargaUseCase:
     def __init__(self, repositorio):
@@ -14,7 +15,24 @@ class RegistrarRecargaUseCase:
             tipo_servicio=datos_recarga['tipo_servicio'],
             monto_invertido=datos_recarga['monto_invertido'],
             monto_generado=datos_recarga['monto_generado'],
-            usuario_id=usuario_id # <-- ¡Este es el ID del usuario que hizo login!
+            usuario_id=usuario_id,
+            fecha_registro=datetime.now(timezone.utc)
         )
 
         return self.repositorio.guardar(nueva_recarga)
+
+class ObtenerRecargasHoyUseCase:
+    def __init__(self, repositorio):
+        self.repositorio = repositorio
+
+    def ejecutar(self):
+        # El repositorio debería filtrar por la fecha de hoy
+        recargas = self.repositorio.obtener_hoy()
+        
+        return [{
+            "id": r.control_recarga_id,
+            "servicio": r.tipo_servicio,
+            "invertido": float(r.monto_invertido),
+            "generado": float(r.monto_generado),
+            "ganancia": float(r.monto_generado - r.monto_invertido)
+        } for r in recargas]

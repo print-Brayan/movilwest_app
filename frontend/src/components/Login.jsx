@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const manejarLogin = async (e) => {
     e.preventDefault(); // Evita que la página se recargue al enviar el formulario
@@ -11,7 +13,8 @@ export default function Login() {
 
     try {
       // Hacemos la petición a tu backend en Flask
-      const respuesta = await fetch('http://localhost:5000/api/usuarios/login', {
+      console.log("Conectando a:", import.meta.env.VITE_API_URL);
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -22,7 +25,7 @@ export default function Login() {
       if (respuesta.ok) {
         // ¡Éxito! Guardamos el Token VIP en la memoria del navegador
         localStorage.setItem('token_movilwest', datos.token);
-        alert('¡Bienvenido a Movilwest!');
+        navigate('/inventario');
         // Aquí luego programaremos que te redirija al inventario
       } else {
         // Si la clave es incorrecta, mostramos el error del backend
