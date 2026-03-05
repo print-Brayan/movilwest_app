@@ -1,181 +1,220 @@
 # Documentación técnica del proyecto `movilwest_app`
 
-## 1) Propósito del documento
-Este documento funciona como **bitácora técnica viva** para saber:
-- Qué hace cada archivo principal.
-- Qué hace cada función disponible hoy.
-- Cómo está organizada la arquitectura (enfoque Clean Architecture en construcción).
-- Qué revisar cuando se agreguen módulos nuevos.
+## 1) Propósito
+Este documento es una guía viva para entender:
+- la estructura actual del proyecto,
+- la responsabilidad de cada módulo,
+- las funciones/rutas principales,
+- y cómo mantener la documentación alineada con el código.
 
 ---
 
-## 2) Arquitectura actual (visión general)
-El proyecto está dividido en:
-- **Backend**: Flask + SQLAlchemy + PostgreSQL.
-- **Frontend**: React + Vite.
-- **Infraestructura local**: Docker Compose con servicios `db`, `backend`, `frontend`, `pgadmin`.
+## 2) Estado actual de arquitectura
+El proyecto usa una arquitectura inspirada en Clean Architecture con estas capas en backend:
 
-### Capas backend (estado actual)
-- `backend/domain/` → **reservada** para reglas de negocio puras (actualmente vacía).
-- `backend/use_case/` → **reservada** para casos de uso (actualmente vacía).
-- `backend/adapters/` → **reservada** para adaptadores (API, repositorios, mapeos) (actualmente vacía).
-- `backend/infrastructure/` → configuración y acceso a recursos externos (DB y modelos ORM).
+- `backend/adapters/`: endpoints HTTP y middleware de autenticación.
+- `backend/use_case/`: reglas de negocio de usuarios, productos, login y recargas.
+- `backend/infrastructure/`: base de datos, modelos ORM, configuración y repositorios.
+- `backend/domain/`: reservado para entidades/reglas de dominio puras (actualmente sin implementación explícita separada).
 
-> Nota: hoy existe lógica de inicialización dentro de `app.py`; la meta de Clean Architecture es mover lógica de aplicación a `use_case` y mantener `app.py` como composición/arranque.
+Frontend:
+- React + React Router + Tailwind-like utility classes.
+- Vistas principales: Login, Inventario, Recargas, AgregarProducto.
 
 ---
 
-## 3) Inventario por archivo
+## 3) Inventario de archivos (actualizado)
 
-## Raíz del proyecto
+## Raíz
 - `docker-compose.yml`
-  - Define y orquesta los servicios Docker:
-    - `db` (PostgreSQL)
-    - `backend` (Flask)
-    - `frontend` (React)
-    - `pgadmin` (administrador web de PostgreSQL)
-- `.env`
-  - Variables locales de entorno (credenciales y configuración de servicios).
-  - **No debe subirse a git**.
-- `.env.example`
-  - Plantilla de variables para nuevos entornos/equipo.
+  - Servicios: `db`, `backend`, `frontend`, `pgadmin`.
+- `.env`, `.env.example`
+  - Variables de entorno del stack.
 - `.gitignore`
-  - Reglas para excluir secretos, caches y artefactos temporales.
+  - Exclusión de secretos/cachés/artefactos locales.
 - `Comandos.txt`
-  - Guía operativa rápida de comandos Docker, Git y utilidades del proyecto.
-- `init.sql`
-  - Reservado para scripts SQL de inicialización (actualmente vacío).
+  - Ayuda operativa de comandos.
+- `DOCUMENTACION_PROYECTO.md`
+  - Este documento.
 
 ## Backend
 - `backend/app.py`
-  - Punto de entrada de Flask.
-  - Crea aplicación, configura SQLAlchemy, inicializa DB y expone endpoint de salud.
-- `backend/requirements.txt`
-  - Dependencias Python del backend.
-- `backend/Dockerfile`
-  - Imagen del backend Flask.
+  - Inicializa Flask, CORS, SQLAlchemy, blueprints y endpoint de status.
+  - Expone `GET /uploads/<filename>` para servir imágenes guardadas.
 
-### Backend / Infrastructure
-- `backend/infrastructure/config.py`
-  - Construye la URL de conexión a base de datos desde entorno.
-- `backend/infrastructure/database.py`
-  - Instancia global de SQLAlchemy (`db`).
-- `backend/infrastructure/models.py`
-  - Modelos ORM de tablas PostgreSQL.
-- `backend/infrastructure/__init__.py`
-  - Marca el paquete Python de infraestructura.
+### Adapters (`backend/adapters`)
+- `auth_middleware.py`
+  - Decorador `token_requerido` para validar JWT en rutas protegidas.
+- `usuario_routes.py`
+  - `POST /api/usuarios/registro`
+  - `POST /api/usuarios/login`
+- `producto_routes.py`
+  - `POST /api/productos/nuevo`
+  - `GET /api/productos/`
+  - `DELETE /api/productos/<id>`
+  - `POST /api/productos/vender/<id>`
+- `recarga_routes.py`
+  - `POST /api/recargas/nueva`
+  - `GET /api/recargas/hoy`
+
+### Use cases (`backend/use_case`)
+- `usuario_use_cases.py` → `RegistrarUsuarioUseCase`
+- `login_use_case.py` → `LoginUseCase`
+- `producto_use_cases.py` → `RegistrarProductoUseCase`, `ObtenerProductosUseCase`, `EliminarProductoUseCase`, `VenderProductoUseCase`
+- `recarga_use_cases.py` → `RegistrarRecargaUseCase`, `ObtenerRecargasHoyUseCase`
+
+### Infrastructure (`backend/infrastructure`)
+- `config.py` → `build_database_url()`
+- `database.py` → instancia global `db`
+- `models.py` → tablas ORM
+- `repositories/usuario_repository.py` → `UsuarioRepository`
+- `repositories/producto_repository.py` → `ProductoRepository`
+- `repositories/recarga_repository.py` → `RecargaRepository`
+
+### Carpeta de archivos subidos
+- `backend/uploads/`
+  - Almacena imágenes de productos.
 
 ## Frontend
 - `frontend/src/main.jsx`
-  - Bootstrap de React, renderiza `App` en `#root`.
+  - Entry point de React.
 - `frontend/src/App.jsx`
-  - Componente principal actual (plantilla Vite).
-- `frontend/src/index.css`, `frontend/src/App.css`
-  - Estilos globales y del componente principal.
-- `frontend/Dockerfile`
-  - Imagen del frontend React.
-- `frontend/package.json`
-  - Scripts y dependencias del frontend.
-- `frontend/vite.config.js`
-  - Configuración de Vite.
+  - Define rutas:
+    - `/login`
+    - `/inventario`
+    - `/recargas`
+    - `/agregar-producto`
+- `frontend/src/components/Login.jsx`
+  - Form de login + guardado de token.
+- `frontend/src/components/Inventario.jsx`
+  - Tabla de inventario con:
+    - búsqueda en tiempo real,
+    - venta con modal y cantidad,
+    - duplicar producto,
+    - eliminar producto,
+    - vista ampliada de foto,
+    - mensaje de éxito y manejo de error.
+- `frontend/src/components/Recargas.jsx`
+  - Registro de recarga + historial del día + resumen financiero.
+- `frontend/src/components/AgregarProducto.jsx`
+  - Registro de producto nuevo y flujo de duplicación con precarga.
 
 ---
 
-## 4) Catálogo de funciones
+## 4) Funciones/rutas clave
 
 ## Backend
 ### `backend/app.py`
 - `create_app()`
-  - **Responsabilidad**: construir y configurar la app Flask.
-  - **Acciones actuales**:
-    1. Instancia `Flask`.
-    2. Habilita CORS.
-    3. Configura `SQLALCHEMY_DATABASE_URI` con `build_database_url()`.
-    4. Inicializa `db` con Flask.
-    5. Ejecuta `db.create_all()` dentro del contexto de aplicación.
-    6. Declara endpoint `GET /api/status`.
-  - **Retorno**: instancia de aplicación Flask.
+  - Configura app, DB, CORS, blueprints y rutas base.
+- `status()`
+  - `GET /api/status`.
+- `uploaded_file(filename)`
+  - `GET /uploads/<filename>`.
 
-- `status()` (función interna de ruta dentro de `create_app`)
-  - **Ruta**: `GET /api/status`
-  - **Responsabilidad**: endpoint de verificación de estado.
-  - **Retorno**: JSON con estado `ok`.
+### `backend/adapters/producto_routes.py`
+- `allowed_file(filename)`
+  - Valida extensión de imagen permitida.
+- `registrar_producto(usuario_actual)`
+  - Registra producto con foto nueva o conserva `foto_url` existente (duplicación).
+- `obtener_inventario(usuario_actual)`
+  - Devuelve lista de productos.
+- `eliminar_producto(usuario_actual, id)`
+  - Elimina producto por ID (rol ADMIN).
+- `vender_producto(usuario_actual, id)`
+  - Descarga stock y registra impacto financiero.
 
-### `backend/infrastructure/config.py`
-- `build_database_url() -> str`
-  - **Responsabilidad**: obtener y normalizar la URL de BD desde variables de entorno.
-  - **Regla**: si recibe esquema `postgres://`, lo convierte a `postgresql://` para compatibilidad con SQLAlchemy.
-  - **Retorno**: cadena de conexión final.
+### `backend/adapters/recarga_routes.py`
+- `registrar_recarga(usuario_actual)`
+  - Guarda recarga y retorna ganancia neta.
+- `obtener_recargas_hoy(usuario_actual)`
+  - Devuelve recargas del día.
+
+### `backend/adapters/usuario_routes.py`
+- `registrar_usuario()`
+  - Alta de usuario con hash de contraseña.
+- `login_usuario()`
+  - Login + emisión de JWT.
+
+### `backend/adapters/auth_middleware.py`
+- `token_requerido(f)`
+  - Extrae y valida JWT desde header `Authorization: Bearer ...`.
 
 ## Frontend
-### `frontend/src/App.jsx`
-- `App()`
-  - **Responsabilidad**: componente raíz UI actual (demo Vite/React).
-  - **Estado local**: `count` con `useState`.
-  - **Comportamiento**: incrementa contador al pulsar botón.
+### `Inventario.jsx`
+- `cargarProductos()`
+  - Consulta inventario autenticado.
+- `ejecutarVenta()`
+  - Envía cantidad de venta al backend, refresca tabla y muestra notificación.
+- `manejarEliminar(id)`
+  - Elimina producto y recarga listado.
+- `productosFiltrados` (estado derivado)
+  - Filtra por SKU, marca o modelo.
 
-### `frontend/src/main.jsx`
-- Llamada a `createRoot(...).render(...)`
-  - **Responsabilidad**: montar React en el DOM y envolver `App` en `StrictMode`.
+### `AgregarProducto.jsx`
+- `manejarCambioFoto(e)`
+  - Gestiona foto nueva + preview.
+- `enviarFormulario(e)`
+  - Envía `FormData` con datos del producto.
+  - Si no hay foto nueva pero hay duplicación, envía `foto_url` existente.
 
----
+### `Recargas.jsx`
+- `cargarHistorial()`
+  - Carga recargas del día.
+- `manejarRegistro(e)`
+  - Registra nueva recarga y actualiza resumen/historial.
 
-## 5) Catálogo de modelos ORM (tablas)
-Definidos en `backend/infrastructure/models.py`:
-
-- `Usuario` → tabla `usuarios`
-  - Campos clave: `usuario_id`, `username`, `password_hash`, `rol`, `activo`.
-
-- `Producto` → tabla `productos`
-  - Campos clave: `producto_id`, `sku`, `categoria`, `marca`, `modelo`, precios y stock.
-  - Relación: 1:1 con `EspecificacionTelefono`.
-
-- `EspecificacionTelefono` → tabla `especificaciones_telefonos`
-  - Clave: `producto_id` (FK de `productos`).
-  - Guarda características técnicas del teléfono.
-
-- `ChipMovilnet` → tabla `chips_movilnet`
-  - Campos de inventario/venta de chips y referencia opcional a `usuarios`.
-
-- `ControlRecarga` → tabla `control_recargas`
-  - Registro de servicios y montos por usuario.
+### `Login.jsx`
+- `manejarLogin(e)`
+  - Autentica usuario y guarda token en `localStorage`.
 
 ---
 
-## 6) Flujo de ejecución (Docker)
-1. `db` inicia PostgreSQL y expone puerto `5432`.
-2. `backend` espera healthcheck de `db` y arranca Flask en `5000`.
-3. `frontend` arranca Vite en `5173`.
-4. `pgadmin` arranca en `5050` para inspección de BD.
+## 5) Modelo de datos (ORM)
+Definido en `backend/infrastructure/models.py`:
 
-URLs locales:
-- Backend: `http://localhost:5000`
+- `Usuario` → `usuarios`
+- `Producto` → `productos`
+- `EspecificacionTelefono` → `especificaciones_telefonos`
+- `ChipMovilnet` → `chips_movilnet`
+- `ControlRecarga` → `control_recargas`
+
+Notas:
+- `Producto` incluye `foto_url` para miniatura/imagen ampliada en frontend.
+- `ControlRecarga` se usa tanto para recargas como para trazabilidad financiera de ventas.
+
+---
+
+## 6) Flujo de ejecución local (Docker)
+1. `db` inicia PostgreSQL (`5432`).
+2. `backend` arranca Flask (`5000`) y crea tablas si no existen.
+3. `frontend` arranca Vite (`5173`).
+4. `pgadmin` arranca en `5050`.
+
+URLs:
+- API: `http://localhost:5000`
 - Frontend: `http://localhost:5173`
 - pgAdmin: `http://localhost:5050`
 
 ---
 
-## 7) Guía de mantenimiento de esta documentación
-Cada vez que agregues o cambies código:
-1. **Nuevo archivo** → añadirlo en sección “Inventario por archivo”.
-2. **Nueva función** → documentarla en “Catálogo de funciones” con:
-   - Responsabilidad
-   - Parámetros (si aplica)
-   - Retorno
-   - Dependencias
-3. **Nueva tabla/modelo** → actualizar “Catálogo de modelos ORM”.
-4. **Cambio de infraestructura** (Docker, puertos, variables) → actualizar “Flujo de ejecución”.
+## 7) Seguridad y decisiones actuales
+- Autenticación JWT en endpoints sensibles (`token_requerido`).
+- Passwords con `bcrypt` (no texto plano).
+- `secure_filename` para nombres de archivo en uploads.
+- Separación por capas (`adapters` / `use_case` / `infrastructure`).
 
-Checklist rápido por PR:
-- [ ] Se documentaron archivos nuevos.
-- [ ] Se documentaron funciones nuevas/modificadas.
-- [ ] Se actualizaron variables de entorno si cambiaron.
-- [ ] Se validó que comandos de arranque siguen correctos.
+Pendientes recomendados:
+- Retirar `print` de depuración en `producto_routes.py`.
+- Mover secretos por defecto (`JWT_SECRET`) a entorno obligatorio.
+- Migrar de `db.create_all()` a migraciones (Alembic/Flask-Migrate).
 
 ---
 
-## 8) Próximos pasos recomendados (Clean Architecture + seguridad)
-- Mover lógica de negocio desde infraestructura hacia `domain` y `use_case`.
-- Evitar `db.create_all()` en ambientes no dev y migrar a Alembic/Flask-Migrate.
-- Definir DTOs/validaciones para entrada de datos antes de persistir.
-- Añadir política de manejo de secretos (no credenciales reales en repositorio).
+## 8) Guía de mantenimiento de esta documentación
+Al abrir un PR o completar una funcionalidad:
+- [ ] Actualizar inventario de archivos nuevos.
+- [ ] Registrar nuevas rutas/endpoints.
+- [ ] Registrar nuevos casos de uso/repositorios.
+- [ ] Documentar cambios de UX en componentes.
+- [ ] Validar que secciones de seguridad sigan vigentes.
