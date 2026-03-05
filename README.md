@@ -41,12 +41,12 @@ Se usan `.env` en raíz y `frontend/.env` para el cliente.
 
 Ejemplo principal (raíz):
 ```env
-POSTGRES_DB=movilwest_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=admin
-DATABASE_URL=postgresql://postgres:admin@db:5432/movilwest_db
-PGADMIN_DEFAULT_EMAIL=admin@movilwest.com
-PGADMIN_DEFAULT_PASSWORD=admin123
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+DATABASE_URL=
+PGADMIN_DEFAULT_EMAIL=
+PGADMIN_DEFAULT_PASSWORD=
 ```
 
 ## 🧭 Endpoints principales
