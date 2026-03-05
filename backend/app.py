@@ -18,6 +18,13 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # Importamos y registramos nuestras rutas
+    from adapters.usuario_routes import usuario_bp
+    app.register_blueprint(usuario_bp, url_prefix='/api/usuarios')
+
+    from adapters.producto_routes import producto_bp
+    app.register_blueprint(producto_bp, url_prefix='/api/productos')
+
     @app.route('/api/status', methods=['GET'])
     def status():
         return jsonify({

@@ -1,8 +1,8 @@
 # backend/adapters/usuario_routes.py
 from flask import Blueprint, request, jsonify
 from infrastructure.repositories.usuario_repository import UsuarioRepository
-from use_cases.usuario_use_cases import RegistrarUsuarioUseCase
-
+from use_case.usuario_use_cases import RegistrarUsuarioUseCase
+from use_case.login_use_case import LoginUseCase
 # Creamos un "Blueprint" que es como un mini-módulo de rutas en Flask
 usuario_bp = Blueprint('usuario', __name__)
 
@@ -33,3 +33,29 @@ def registrar_usuario():
         
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+
+@usuario_bp.route('/login', methods=['POST'])
+def login_usuario():
+    datos = request.get_json()
+    username = datos.get('username')
+    password = datos.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Faltan credenciales"}), 400
+
+    repositorio = UsuarioRepository()
+    caso_uso = LoginUseCase(repositorio)
+
+    try:
+        token, usuario = caso_uso.ejecutar(username, password)
+        return jsonify({
+            "mensaje": "Login exitoso",
+            "token": token,
+            "usuario": {
+                "username": usuario.username,
+                "rol": usuario.rol
+            }
+        }), 200 # 200 significa "OK"
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401 # 401 significa "No Autorizado"
