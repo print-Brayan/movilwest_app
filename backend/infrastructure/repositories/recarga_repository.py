@@ -7,6 +7,12 @@ class RecargaRepository:
         db.session.add(recarga)
         db.session.commit()
         return recarga
-
-    def obtener_hoy(self):
-        return ControlRecarga.query.filter_by(fecha_registro=date.today()).all()
+    
+    def obtener_todos(self):
+        return ControlRecarga.query.all()
+    
+    def obtener_del_dia(self):
+        """Busca solo las transacciones financieras que ocurrieron hoy."""
+        hoy = date.today()
+        # Filtramos directamente en PostgreSQL
+        return ControlRecarga.query.filter(ControlRecarga.fecha_registro == hoy).all()

@@ -21,18 +21,25 @@ class RegistrarRecargaUseCase:
 
         return self.repositorio.guardar(nueva_recarga)
 
-class ObtenerRecargasHoyUseCase:
+class ObtenerRecargasUseCase:
     def __init__(self, repositorio):
         self.repositorio = repositorio
 
     def ejecutar(self):
-        # El repositorio debería filtrar por la fecha de hoy
-        recargas = self.repositorio.obtener_hoy()
+        # 👇 CAMBIAMOS la función que llamamos aquí:
+        # Antes decía: self.repositorio.obtener_todos()
+        recargas = self.repositorio.obtener_del_dia() 
         
-        return [{
-            "id": r.control_recarga_id,
-            "servicio": r.tipo_servicio,
-            "invertido": float(r.monto_invertido),
-            "generado": float(r.monto_generado),
-            "ganancia": float(r.monto_generado - r.monto_invertido)
-        } for r in recargas]
+        lista_recargas = []
+        for r in recargas:
+            lista_recargas.append({
+                "control_recarga_id": r.control_recarga_id,
+                "tipo_servicio": r.tipo_servicio,
+                "monto_invertido": float(r.monto_invertido),
+                "monto_generado": float(r.monto_generado),
+                # Formateamos la fecha si existe para evitar errores en React
+                "fecha_registro": r.fecha_registro.strftime('%Y-%m-%d') if r.fecha_registro else None,
+                "usuario_id": r.usuario_id
+            })
+            
+        return lista_recargas

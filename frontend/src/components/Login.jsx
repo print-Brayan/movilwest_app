@@ -1,19 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { isAuthenticated, saveSession } from '../utils/auth';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/inventario', { replace: true });
+    }
+  }, [navigate]);
 
   const manejarLogin = async (e) => {
     e.preventDefault(); // Evita que la página se recargue al enviar el formulario
     setError('');
+    setCargando(true);
 
     try {
       // Hacemos la petición a tu backend en Flask
-      console.log("Conectando a:", import.meta.env.VITE_API_URL);
       const respuesta = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,16 +31,16 @@ export default function Login() {
       const datos = await respuesta.json();
 
       if (respuesta.ok) {
-        // ¡Éxito! Guardamos el Token VIP en la memoria del navegador
-        localStorage.setItem('token_movilwest', datos.token);
-        navigate('/inventario');
-        // Aquí luego programaremos que te redirija al inventario
+        saveSession(datos.token, datos.usuario);
+        navigate('/inventario', { replace: true });
       } else {
         // Si la clave es incorrecta, mostramos el error del backend
         setError(datos.error || 'Error al iniciar sesión');
       }
     } catch (err) {
       setError('Error de conexión con el servidor');
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -81,9 +89,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+            disabled={cargando}
+            className={`w-full text-white font-bold py-2 px-4 rounded transition duration-200 ${cargando ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
           >
-            Ingresar
+            {cargando ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
       </div>

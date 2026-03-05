@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { clearSession, getToken } from '../utils/auth';
 
 export default function AgregarProducto() {
   const navigate = useNavigate();
@@ -46,6 +47,13 @@ export default function AgregarProducto() {
     e.preventDefault();
     setCargando(true);
 
+    const token = getToken();
+    if (!token) {
+      setCargando(false);
+      navigate('/login', { replace: true });
+      return;
+    }
+
     const data = new FormData();
     data.append('sku', formData.sku);
     data.append('categoria', formData.categoria);
@@ -66,7 +74,7 @@ export default function AgregarProducto() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/nuevo`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token_movilwest')}`
+          'Authorization': `Bearer ${token}`
         },
         body: data
       });
@@ -76,6 +84,11 @@ export default function AgregarProducto() {
         navigate('/inventario');
       } else {
         const errorData = await res.json();
+        if (res.status === 401) {
+          clearSession();
+          navigate('/login', { replace: true });
+          return;
+        }
         alert("Error: " + (errorData.error || "No se pudo registrar"));
       }
     } catch (err) {

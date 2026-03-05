@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from adapters.auth_middleware import token_requerido
 from infrastructure.repositories.recarga_repository import RecargaRepository
-from use_case.recarga_use_cases import RegistrarRecargaUseCase, ObtenerRecargasHoyUseCase
+from use_case.recarga_use_cases import RegistrarRecargaUseCase, ObtenerRecargasUseCase
 
 recarga_bp = Blueprint('recarga', __name__)
 
@@ -42,5 +42,5 @@ def registrar_recarga(usuario_actual):
 @token_requerido
 def obtener_recargas_hoy(usuario_actual):
     repositorio = RecargaRepository()
-    caso_uso = ObtenerRecargasHoyUseCase(repositorio)
+    caso_uso = ObtenerRecargasUseCase(repositorio)
     return jsonify(caso_uso.ejecutar()), 200
