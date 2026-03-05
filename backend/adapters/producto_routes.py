@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from adapters.auth_middleware import token_requerido
 from infrastructure.repositories.producto_repository import ProductoRepository
-from use_case.producto_use_cases import RegistrarProductoUseCase
+from use_case.producto_use_cases import RegistrarProductoUseCase, ObtenerProductosUseCase
 
 producto_bp = Blueprint('producto', __name__)
 
@@ -33,3 +33,16 @@ def registrar_producto(usuario_actual):
         
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+
+@producto_bp.route('/', methods=['GET'])
+@token_requerido
+def obtener_inventario(usuario_actual):
+    repositorio = ProductoRepository()
+    caso_uso = ObtenerProductosUseCase(repositorio)
+
+    try:
+        lista = caso_uso.ejecutar()
+        # Devolvemos la lista completa con un código 200 (OK)
+        return jsonify(lista), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

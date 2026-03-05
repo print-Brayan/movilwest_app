@@ -27,3 +27,26 @@ class RegistrarProductoUseCase:
 
         # 3. Guardar en la base de datos
         return self.repositorio.guardar(nuevo_producto)
+
+class ObtenerProductosUseCase:
+    def __init__(self, repositorio):
+        self.repositorio = repositorio
+
+    def ejecutar(self):
+        productos = self.repositorio.obtener_todos()
+        
+        # Transformamos la lista de objetos en una lista de diccionarios
+        lista_productos = []
+        for p in productos:
+            lista_productos.append({
+                "producto_id": p.producto_id, # Ajusta esto si tu ID se llama diferente
+                "sku": p.sku,
+                "categoria": p.categoria,
+                "marca": p.marca,
+                "modelo": p.modelo,
+                # Convertimos los precios a float por si la BD los devuelve como Decimal
+                "precio_venta_usd": float(p.precio_venta_usd), 
+                "stock": p.stock
+            })
+            
+        return lista_productos

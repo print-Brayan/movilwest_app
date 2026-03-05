@@ -25,6 +25,9 @@ def create_app():
     from adapters.producto_routes import producto_bp
     app.register_blueprint(producto_bp, url_prefix='/api/productos')
 
+    from adapters.recarga_routes import recarga_bp
+    app.register_blueprint(recarga_bp, url_prefix='/api/recargas')
+
     @app.route('/api/status', methods=['GET'])
     def status():
         return jsonify({

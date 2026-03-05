@@ -6,3 +6,6 @@ class ProductoRepository:
         db.session.add(producto)
         db.session.commit()
         return producto
+    
+    def obtener_todos(self):
+        return Producto.query.all()
